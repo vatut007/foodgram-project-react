@@ -5,16 +5,17 @@ from .ingredient import Ingredient
 from .tag import Tag
 from users.models import User
 
+
 class Recipe (models.Model):
-    author=models.ForeignKey(
+    author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='recipes')
-    name=models.CharField(max_length=200)
+    name = models.CharField(max_length=200)
     image = models.ImageField(
         'Картинка',
         upload_to='recipe/',
         blank=True
-    ) 
-    text= models.TextField()
+    )
+    text = models.TextField()
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientRecipe',
@@ -25,7 +26,7 @@ class Recipe (models.Model):
         'Дата публикации',
         auto_now_add=True
     )
-    tags=models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         related_name='recipes'
     )
@@ -33,12 +34,13 @@ class Recipe (models.Model):
         verbose_name='Время приготовления, мин.'
     )
 
-    def __str__(self): 
+    def __str__(self):
         return self.text 
-    
+
+
 class IngredientRecipe(models.Model):
     """Ингредиент в рецепте"""
-    ingredient = models.ForeignKey(
+    ingredients = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиенты рецепта'
@@ -48,15 +50,16 @@ class IngredientRecipe(models.Model):
         on_delete=models.CASCADE,
         verbose_name='Рецепт'
     )
-    amount= models.IntegerField(default=1,
+    amount = models.IntegerField(
+        default=1,
         validators=[MinValueValidator(1)],
         verbose_name='Количество ингредиента')
-    
+
     class Meta:
         default_related_name = 'ingridients_recipe'
         constraints = (
             models.UniqueConstraint(
-                fields=('recipe', 'ingredient',),
+                fields=('recipe', 'ingredients',),
                 name='recipe_ingredient_exists'),
             models.CheckConstraint(
                 check=models.Q(amount__gte=1),
@@ -66,4 +69,4 @@ class IngredientRecipe(models.Model):
         verbose_name_plural = 'Ингредиенты в рецепте'
 
     def __str__(self):
-        return f'{self.recipe}: {self.ingredient} – {self.amount}'
+        return f'{self.recipe}: {self.ingredients} – {self.amount}'

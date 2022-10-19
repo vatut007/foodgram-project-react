@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import F, Q
 
 USER = 'user'
 ADMIN = 'admin'
@@ -32,12 +33,10 @@ class User(AbstractUser):
                             max_length=max([len(role[0]) for role in ROLES]),
                             choices=ROLES,
                             default=USER)
-    password = models.CharField('Пароль',
-                                max_length=128,
-                                blank=True,
-                                null=True,
-                                default='')
-
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+    
     @property
     def is_user(self):
         return self.role == USER
@@ -45,7 +44,7 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.is_staff or self.role == ADMIN
-    
+
     class Meta:
         ordering = ('id',)
         verbose_name = 'Пользователь'
@@ -53,3 +52,27 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class Follow (models.Model):
+    """Модель подписок."""
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='foolower'
+        )
+    author = models.ForeignKey(
+        User,
+        related_name='following',
+        on_delete=models.CASCADE
+        )
+    constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'author'),
+                name='unique_follow',
+            ),
+            models.CheckConstraint(
+                check=~Q(user=F('author')),
+                name='self_following',
+            ),
+        )
