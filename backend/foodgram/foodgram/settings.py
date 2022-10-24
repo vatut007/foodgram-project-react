@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'djoser',
     'users',
     'webcolors',
+    'django_filters',
     'food',
 ]
 
@@ -36,7 +37,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+ 
 ROOT_URLCONF = 'foodgram.urls'
 
 REST_FRAMEWORK = {

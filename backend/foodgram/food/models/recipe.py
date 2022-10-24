@@ -35,12 +35,12 @@ class Recipe (models.Model):
     )
 
     def __str__(self):
-        return self.text 
+        return self.text
 
 
 class IngredientRecipe(models.Model):
     """Ингредиент в рецепте"""
-    ingredients = models.ForeignKey(
+    ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиенты рецепта'
@@ -48,7 +48,7 @@ class IngredientRecipe(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        verbose_name='Рецепт'
+        verbose_name='Рецепт',
     )
     amount = models.IntegerField(
         default=1,
@@ -59,7 +59,7 @@ class IngredientRecipe(models.Model):
         default_related_name = 'ingridients_recipe'
         constraints = (
             models.UniqueConstraint(
-                fields=('recipe', 'ingredients',),
+                fields=('recipe', 'ingredient',),
                 name='recipe_ingredient_exists'),
             models.CheckConstraint(
                 check=models.Q(amount__gte=1),
@@ -69,4 +69,4 @@ class IngredientRecipe(models.Model):
         verbose_name_plural = 'Ингредиенты в рецепте'
 
     def __str__(self):
-        return f'{self.recipe}: {self.ingredients} – {self.amount}'
+        return f'{self.recipe}: {self.ingredient} – {self.amount}'

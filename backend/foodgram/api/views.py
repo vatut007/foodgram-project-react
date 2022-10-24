@@ -3,10 +3,11 @@ from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from djoser.views import UserViewSet
+from api.filters import IngredientSearchFilter
 
 from food.models import Recipe, Ingredient, IngredientRecipe, Tag
 from users.models import User
-from .serializers import ( RecipeSerializer, CustomUserSerializer,
+from .serializers import ( IngredientRecipeSerializer, RecipeSerializer, CustomUserSerializer,
                            TagsSerializer, CreateRecipeSerializer,
                            IngredientSerializer)
 
@@ -45,3 +46,10 @@ class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filter_backends = (IngredientSearchFilter,)
+    search_fields = ('^name',)
+
+
+class IngredientRecipeViewSet(viewsets.ModelViewSet):
+    queryset = IngredientRecipe.objects.all()
+    serializer_class = IngredientRecipeSerializer

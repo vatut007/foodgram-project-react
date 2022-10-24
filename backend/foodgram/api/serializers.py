@@ -84,7 +84,9 @@ class CustomRegUserSerializer(UserSerializer):
         )
     validate_password = make_password
 
+
 class IngredientSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Ingredient
         fields = (
@@ -96,7 +98,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     id = PrimaryKeyRelatedField(
-        source='ingredients',
+        source='ingredient',
         read_only=True
         )
     measurement_unit = SlugRelatedField(
@@ -123,9 +125,8 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 class CreateIngredientRecipeSerializer(ModelSerializer):
     id = PrimaryKeyRelatedField(
         source='ingredient',
-        queryset=Ingredient.objects.all(),
-    )
-
+        queryset=Ingredient.objects.all())
+    
     class Meta:
         model = IngredientRecipe
         fields = (
@@ -143,6 +144,7 @@ class CreateIngredientRecipeSerializer(ModelSerializer):
             ingredients=validated_data.get('id'),
             amount=validated_data.get('amount')
         )
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True, many=False)
@@ -167,7 +169,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
 
-class CreateRecipeSerializer(serializers.Serializer):
+class CreateRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField(required=False, allow_null=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = CreateIngredientRecipeSerializer(many=True)
@@ -192,7 +194,7 @@ class CreateRecipeSerializer(serializers.Serializer):
             IngredientRecipe(
                 recipe=recipe,
                 amount=ingredient['amount'],
-                ingredients=ingredient['ingredients'],
+                ingredient=ingredient['ingredient'],
             ) for ingredient in ingredients
         ])
 
@@ -211,7 +213,7 @@ class CreateRecipeSerializer(serializers.Serializer):
                 'Время приготовления должно быть больше 0!'
             )
         return data
-
+        
     def create(self, validate_data):
         request = self.context.get('request')
         ingredients = validate_data.pop('ingredients')
