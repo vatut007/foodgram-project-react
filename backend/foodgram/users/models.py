@@ -33,10 +33,10 @@ class User(AbstractUser):
                             max_length=max([len(role[0]) for role in ROLES]),
                             choices=ROLES,
                             default=USER)
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
-    
+
     @property
     def is_user(self):
         return self.role == USER
@@ -59,14 +59,18 @@ class Follow (models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='foolower'
+        related_name='follower'
         )
     author = models.ForeignKey(
         User,
         related_name='following',
         on_delete=models.CASCADE
         )
-    constraints = (
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+        constraints = (
             models.UniqueConstraint(
                 fields=('user', 'author'),
                 name='unique_follow',
@@ -76,3 +80,6 @@ class Follow (models.Model):
                 name='self_following',
             ),
         )
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}.'
