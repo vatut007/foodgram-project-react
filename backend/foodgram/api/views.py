@@ -1,25 +1,26 @@
-from rest_framework import viewsets, status
+from django.db.models import F, Sum
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
+                         Tag)
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.decorators import action
-from django.http import HttpResponse
-from django.db.models import F, Sum
-from django.template.loader import render_to_string
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
-from djoser.views import UserViewSet
-from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
+from users.models import Follow, User
 from weasyprint import HTML
 
-from food.models import Recipe, Ingredient, IngredientRecipe, Tag, Favorite, Cart
-from users.models import User, Follow
-from .serializers import ( IngredientRecipeSerializer, RecipeSerializer, CustomUserSerializer,
-                           TagsSerializer, CreateRecipeSerializer,
-                           IngredientSerializer,CreateIngredientRecipeSerializer,
-                           FollowSerializer, FollowListSerializer,
-                           FavoriteSerializer, CartSerializer)
 from .pagination import CustomPagination
+from .serializers import (CartSerializer, CreateIngredientRecipeSerializer,
+                          CreateRecipeSerializer, CustomUserSerializer,
+                          FavoriteSerializer, FollowListSerializer,
+                          FollowSerializer, IngredientRecipeSerializer,
+                          IngredientSerializer, RecipeSerializer,
+                          TagsSerializer)
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -41,8 +42,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-   
-
     @staticmethod
     def delete_method_for_actions(request, pk, model):
         user = request.user
@@ -56,6 +55,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return self.post_method_for_actions(
             request, pk, serializers=CartSerializer
         )
+
     @action(
         detail=False, methods=['get'], permission_classes=(IsAuthenticated,)
     )
@@ -66,7 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             name=F('ingredient__name'),
             measurement_unit=F('ingredient__measurement_unit')
         ).annotate(amount=Sum('amount')).values_list(
-            'ingredient__name', 'amount', 'ingredient__measurement_unit'
+            'ingredient__name', 'amount_sum', 'ingredient__measurement_unit'
         )
         html_template = render_to_string('recipes/pdf_template.html',
                                          {'ingredients': shopping_list})
@@ -114,7 +114,7 @@ class CustomUserViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, url_path='subscribe', methods=['post', 'delete'])
-    def subscripe(self, request, id):
+    def subscribe(self, request, id):
         if request.method != 'POST':
             subscription = get_object_or_404(
                 Follow,

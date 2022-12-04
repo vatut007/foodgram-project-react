@@ -1,27 +1,16 @@
-from django.core.files.base import ContentFile
+import webcolors
+from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
+from djoser.serializers import UserSerializer
+from .fields import Base64ImageField
+from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
+                         Tag)
 from rest_framework import serializers
 from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         PrimaryKeyRelatedField,
                                         SerializerMethodField,
                                         SlugRelatedField, ValidationError)
-
-from food.models import Recipe, Tag, Cart
-from users.models import User, Follow
-from food.models import Ingredient, IngredientRecipe, Favorite
-from djoser.serializers import UserSerializer
-from django.contrib.auth.hashers import make_password
-import base64
-import webcolors
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith('data:image'):
-            format, imgstr = data.split(';base64,')
-            ext = format.split('/')[-1]
-            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-        return super().to_internal_value(data)
+from users.models import Follow, User
 
 
 class Hex2NameColor(serializers.Field):
@@ -123,6 +112,35 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
         )
 
 
+class ShowRecipeSerializer(serializers.ModelSerializer):
+    tags = TagsSerializer(many=True, read_only=True)
+    author = CustomUserSerializer(read_only=True)
+    ingredients = serializers.SerializerMethodField()
+    image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Recipe
+        fields = (
+            "id",
+            "tags",
+            "author",
+            "is_favorited",
+            "ingredients",
+            "name",
+            "image",
+            "text",
+            "cooking_time",
+            "is_in_shopping_cart",
+        )
+
+    @staticmethod
+    def get_ingredients(obj):
+        ingredients = IngredientRecipe.objects.filter(recipe=obj)
+        return IngredientRecipeSerializer(ingredients, many=True).data
+
+
 class CreateIngredientRecipeSerializer(ModelSerializer):
     id = PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all())
@@ -198,21 +216,36 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             ) for ingredient in ingredients
         ])
 
-    def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
-        ingredients_list = []
-        for ingredient in ingredients:
-            ingredient_id = ingredient['id']
-            if ingredient_id in ingredients_list:
-                raise ValidationError(
-                    'Есть задублированные ингредиенты!'
-                )
-            ingredients_list.append(ingredient_id)
-        if data['cooking_time'] <= 0:
+    def validate(self, ingredients_):
+        if not ingredients_['ingredients'] or not ingredients_['tags']:
             raise ValidationError(
-                'Время приготовления должно быть больше 0!'
+                'Добавьте ингредиенты и укажите тег для рецепта!'
             )
-        return data
+        ingredients = ingredients_['ingredients']
+        min_ingredients = 2
+        if len(ingredients) < min_ingredients:
+            raise ValidationError(
+                'Ингредиентов должно быть два или больше!'
+            )
+        data = []
+        for ingredient in ingredients:
+            data.append(ingredient['id'])
+            if ingredient['amount'] <= 0:
+                ingredient_incorrect = ingredient['id']
+                raise ValidationError(
+                    f'ЕИ - ингредиента "{ingredient_incorrect}" не'
+                    'должна быть равна нулю или отрицательным числом!'
+                )
+        check_unique = set(data)
+        if len(check_unique) != len(data):
+            raise ValidationError(
+                'Ингредиенты повторяются, объедините их или выберите другие!'
+            )
+        if ingredients_['cooking_time'] <= 0:
+            raise ValidationError(
+                'Время приготовления должно быть больше нуля!'
+            )
+        return ingredients_
 
     def create(self, validate_data):
         request = self.context.get('request')

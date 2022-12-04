@@ -1,5 +1,5 @@
 from .ingredient import Ingredient
+from .recipe import Cart, Favorite, IngredientRecipe, Recipe
 from .tag import Tag
-from .recipe import Recipe, IngredientRecipe, Favorite, Cart
 
 __all__= [Ingredient, Tag, Recipe, IngredientRecipe, Favorite, Cart]
