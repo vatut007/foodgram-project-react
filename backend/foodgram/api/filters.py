@@ -1,8 +1,9 @@
 from django_filters.rest_framework import FilterSet
 from django_filters.rest_framework.filters import (AllValuesMultipleFilter,
                                                    BooleanFilter)
-from food.models import Recipe
 from rest_framework.filters import SearchFilter
+
+from food.models import Recipe
 
 
 class IngredientSearchFilter(SearchFilter):
