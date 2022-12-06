@@ -14,7 +14,6 @@ from weasyprint import HTML
 from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
                          Tag)
 from users.models import Follow, User
-
 from .pagination import CustomPagination
 from .serializers import (CartSerializer, CreateIngredientRecipeSerializer,
                           CreateRecipeSerializer, CustomUserSerializer,
@@ -67,7 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             name=F('ingredient__name'),
             measurement_unit=F('ingredient__measurement_unit')
         ).annotate(amount_sum=Sum('amount')).values_list(
-            'ingredient__name', 'amount', 'ingredient__measurement_unit'
+            'ingredient__name', 'amount_sum', 'ingredient__measurement_unit'
         )
         html_template = render_to_string('recipes/pdf_template.html',
                                          {'ingredients': shopping_list})
