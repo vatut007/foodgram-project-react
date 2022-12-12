@@ -12,11 +12,9 @@ class Command(BaseCommand):
             for row in DictReader(open(csv_file, encoding='utf-8')):
                 Ingredient.objects.create(
                     name=row['name'],
-                    measurement_unit=row['measurement_unit']
-                    )
+                    measurement_unit=row['measurement_unit'])
         else:
             print(
                 'Файл Ingredient.csv для заполнения '
-                f'{Ingredient.__name__} отсутвует.'
-                )
+                f'{Ingredient.__name__} отсутвует.')
         print(f'{Ingredient.__name__}: новые объекты добавлены.')
