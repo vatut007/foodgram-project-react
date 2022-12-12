@@ -7,7 +7,6 @@ from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         PrimaryKeyRelatedField,
                                         SerializerMethodField,
                                         SlugRelatedField, ValidationError)
-
 from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
                          Tag)
 from users.models import Follow, User
