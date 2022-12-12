@@ -15,18 +15,21 @@ from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
                          Tag)
 from users.models import Follow, User
 from .pagination import CustomPagination
-from .serializers import (CartSerializer, CreateIngredientRecipeSerializer,
-                          CreateRecipeSerializer, CustomUserSerializer,
+from .serializers import (CartSerializer,
+                          CreateRecipeSerializer,
                           FavoriteSerializer, FollowListSerializer,
-                          FollowSerializer, IngredientRecipeSerializer,
+                          FollowSerializer,
                           IngredientSerializer, RecipeSerializer,
                           TagsSerializer)
+from .filters import IngredientSearchFilter, RecipeFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет рецептов."""
     queryset = Recipe.objects.all()
+    filter_backends = [DjangoFilterBackend]
     serializer_class = RecipeSerializer
+    filterset_class = RecipeFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
@@ -61,7 +64,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         shopping_list = IngredientRecipe.objects.filter(
-            recipe__cart__user=request.user
+            recipe__shopping_cart__user=request.user
         ).values(
             name=F('ingredient__name'),
             measurement_unit=F('ingredient__measurement_unit')
@@ -148,6 +151,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter,)
+    filterset_class = IngredientSearchFilter
     pagination_class = None
     filterset_fields = ('name',)
     search_fields = ('^name',)

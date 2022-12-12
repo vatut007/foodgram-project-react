@@ -155,7 +155,9 @@ class CreateIngredientRecipeSerializer(ModelSerializer):
 
     def validate_amount(self, value):
         if int(value) < 1:
-            raise serializers.ValidationError('Количество должно быть больше 1')
+            raise serializers.ValidationError(
+                'Количество должно быть больше 1'
+                )
         return value
 
     def create(self, validated_data):
@@ -172,6 +174,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True,
         source='ingridients_recipe')
     tags = TagsSerializer(read_only=True, many=True)
+    image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -184,8 +189,26 @@ class RecipeSerializer(serializers.ModelSerializer):
             'ingredients',
             'pub_date',
             'tags',
-            'cooking_time'
+            'cooking_time',
+            'is_in_shopping_cart',
+            'is_favorited'
         )
+
+    def get_is_favorited(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+        return Favorite.objects.filter(
+            recipe=obj, user=request.user
+        ).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+        return Cart.objects.filter(
+            recipe=obj, user=request.user
+        ).exists()
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
