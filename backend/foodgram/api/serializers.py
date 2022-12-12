@@ -90,8 +90,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     id = PrimaryKeyRelatedField(
         source='ingredient',
-        read_only=True
-        )
+        read_only=True)
     measurement_unit = SlugRelatedField(
         source='ingredient',
         slug_field='measurement_unit',
@@ -156,8 +155,7 @@ class CreateIngredientRecipeSerializer(ModelSerializer):
     def validate_amount(self, value):
         if int(value) < 1:
             raise serializers.ValidationError(
-                'Количество должно быть больше 1'
-                )
+                'Количество должно быть больше 1')
         return value
 
     def create(self, validated_data):
