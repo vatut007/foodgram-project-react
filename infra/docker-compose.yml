@@ -19,9 +19,7 @@ services:
     env_file:
       - ./.env
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: vatut007/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
