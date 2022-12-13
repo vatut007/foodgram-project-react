@@ -8,6 +8,7 @@ from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
                          Tag)
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (SAFE_METHODS, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -29,6 +30,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
     filterset_class = RecipeFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
