@@ -8,10 +8,10 @@ from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         SerializerMethodField,
                                         SlugRelatedField, ValidationError)
 
+from .fields import Base64ImageField
 from users.models import Follow, User
 from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
                          Tag)
-from .fields import Base64ImageField
 
 
 class Hex2NameColor(serializers.Field):
