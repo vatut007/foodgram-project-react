@@ -1,5 +1,4 @@
 import webcolors
-
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
@@ -10,9 +9,10 @@ from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         SlugRelatedField, ValidationError)
 
 from users.models import Follow, User
-from .fields import Base64ImageField
 from food.models import (Cart, Favorite, Ingredient, IngredientRecipe, Recipe,
                          Tag)
+
+from .fields import Base64ImageField
 
 
 class Hex2NameColor(serializers.Field):
