@@ -133,8 +133,11 @@ DB_ENGINE=django.db.backends.postgresql \# движок БД
 
 DB_NAME=postgres \# имя БД
 
-POSTGRES_USER=postgres \# логин для подключения к БД POSTGRES_PASSWORD=postgres
-\# пароль для подключения к БД DB_HOST=db \# название контейнера
+POSTGRES_USER=postgres \# логин для подключения к БД 
+
+POSTGRES_PASSWORD=postgres \# пароль для подключения к БД
+
+DB_HOST=db \# название контейнера
 
 DB_PORT=5432 \# порт для подключения к БД
 
